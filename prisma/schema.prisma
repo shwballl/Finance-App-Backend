@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Account {
+  id           String        @id @default(uuid())
+  name         String       
+  currency     String        @default("UAH")
+  balance      Decimal       @default(0) @db.Decimal(14, 2)
+  color        String        @default("#000000")
+  icon         String?
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+}
+
+model Category {
+  id           String          @id @default(uuid())
+  name         String          
+  type         TransactionType
+  icon         String          @default("💰")
+  color        String          @default("#7C3AED")
+  transactions Transaction[]
+}
+
+enum TransactionType {
+  EXPENSE
+  INCOME
+  TRANSFER
+}
+
+model Transaction {
+  id          String          @id @default(uuid())
+  amount      Decimal         @db.Decimal(14, 2)
+  type        TransactionType
+  description String?
+  date        DateTime        @default(now())
+  accountId   String
+  account     Account         @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  categoryId  String?
+  category    Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  createdAt   DateTime        @default(now())
+}
